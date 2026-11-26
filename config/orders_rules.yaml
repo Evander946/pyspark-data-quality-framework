@@ -1,0 +1,17 @@
+datasets:
+  customers:       {path: data/customers.csv}
+  orders:          {path: data/orders.csv}
+  source_extract:  {path: data/orders_source_extract.csv}
+
+rules:
+  - {dataset: customers, check: not_null, column: customer_id, severity: error}
+  - {dataset: customers, check: unique,   column: customer_id, severity: error}
+  - {dataset: customers, check: not_null, column: email,       severity: warn}
+  - {dataset: customers, check: regex,    column: email, pattern: '^[^@\s]+@[^@\s]+\.[a-z]{2,}$', severity: warn}
+  - {dataset: customers, check: range,    column: age, min: 18, max: 100, severity: error}
+  - {dataset: customers, check: allowed_values, column: country, values: [IN, US, GB, DE], severity: error}
+  - {dataset: orders, check: unique, column: order_id, severity: error}
+  - {dataset: orders, check: range,  column: amount, min: 0.01, severity: error}
+  - {dataset: orders, check: allowed_values, column: status, values: [placed, shipped, delivered, cancelled, returned], severity: error}
+  - {dataset: orders, check: referential, column: customer_id, reference: customers, ref_column: customer_id, severity: error}
+  - {dataset: orders, check: row_count_reconciliation, reference: source_extract, tolerance_pct: 0, severity: warn}
